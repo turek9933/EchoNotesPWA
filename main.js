@@ -98,9 +98,7 @@ openRequest.onsuccess = (e) => {
 
 openRequest.onupgradeneeded = (e) => {
     db = e.target.result;
-    if (!db.objectStoreNames.contains("cars")) {
-        db.deleteObjectStore("cars");
-    
+    if (!db.objectStoreNames.contains("cars")) {    
         const objectStore = db.createObjectStore("cars", { keyPath: 'vin'});
     
         objectStore.createIndex("name", "name", { unique: false });
