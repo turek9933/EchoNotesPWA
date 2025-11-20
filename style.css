@@ -1,15 +1,32 @@
+@font-face {
+    font-family: 'CzechHandwriting';
+    src: url('fonts/Caveat-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 body {
-    font-family: "Arial", sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #acecff;
-    padding: 10%;
+    background-color: #EBB862;
+    color: #007BE5;
     font-size: x-large;
+    font-family: 'CzechHandwriting';
+    align-items: center;
+    justify-content: center;
+
+}
+
+p {
+    text-align: center;
+}
+
+div {
+    text-align: center;
 }
 
 h1 {
     text-align: center;
-    color: #333;
 }
 
 #counter {
@@ -50,4 +67,65 @@ li input {
     display: flex;
     justify-content: center;
     margin-top: 20px;
+}
+
+button {
+    font-family: inherit;
+    background-color: #FFF;
+    font-weight: bold;
+    padding: 10px 20px;
+    color: #007BE5;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    /* text-align: center; */
+}
+
+button:hover {
+    background-color: #007BE5;
+    color: #FFF;
+}
+
+textarea {
+    font-family: inherit;
+    padding: 10px;
+    border: 1px solid #007BE5;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 80%;
+    height: 20vh;
+}
+
+audio::-webkit-media-controls-panel {
+    /* O_O */
+    background-color: #ff841a;
+}
+audio::-webkit-media-controls-enclosure {
+    filter: invert(1);
+}
+audio::-webkit-media-controls-current-time-display, 
+audio::-webkit-media-controls-time-remaining-display {
+    /* color: #ffffff; */
+    /* text-shadow: none; */
+    font-family: 'CzechHandwriting';
+}
+
+
+#recordDiv {
+    margin: 20px 0 20px 0;
+}
+
+#saveDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: small;
+    margin: 20px 0 20px 0;
+}
+#saveDiv div {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
