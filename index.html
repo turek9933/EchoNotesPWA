@@ -9,29 +9,49 @@
     <link rel="icon" type="image/png" href="icons/android/android-launchericon-144-144.png" />
 </head>
 <body>
-    <h1 id="title">Dodaj nową</h1>
-    <div>
-        <textarea id="noteText" placeholder="Tutaj pojawi się Twoja notatka spisana z dźwięku..."></textarea>
-    </div>
-
-    <div class="audio-wrapper" id="audio-wrapper">
+    <div id="view-add" class="view active">
+        <h1 id="title">Dodaj nową</h1>
+        <div>
+            <textarea id="noteText" placeholder="Tutaj pojawi się Twoja notatka spisana z dźwięku..."></textarea>
+        </div>
         
+        <div class="audio-wrapper" id="audio-wrapper">
+            
+        </div>
+        
+        <div id="recordDiv"><button id="recordBtn">Rozpocznij nagrywanie</button></div>
+        
+        
+        <div id="saveDiv">
+            <div><input id="checkbox" type="checkbox"><p>Zapisz z dźwiękiem</p></div>
+            <button id="saveBtn">Zapisz notatkę</button>
+        </div>
+        
+        <div><button id="testBtn">Odtwórz nagranie ostatniej notatki</button></div>
+        
+        <div id="errorMessageDiv"></div>
+        <div id="mobileErrorMessageDiv"></div>
+
+        <div class="audiowrapper" id="test-audio-wrapper"></div>
     </div>
-
-    <div id="recordDiv"><button id="recordBtn">Rozpocznij nagrywanie</button></div>
-
     
-    <div id="saveDiv">
-        <div><input id="checkbox" type="checkbox"><p>Zapisz z dźwiękiem</p></div>
-        <button id="saveBtn">Zapisz notatkę</button>
+    <div id="view-list" class="view">
+        <h1>Notatki</h1>
     </div>
     
-    <div><button id="testBtn">Odtwórz nagranie ostatniej notatki</button></div>
-    
-    <div class="audiowrapper" id="test-audio-wrapper">
-
+    <div id="view-edit" class="view">
+        <h1>Edycja notatki</h1>
     </div>
     
     <script src="main.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker Registered', reg.scope))
+                    .catch(err => console.log('Service Worker Not Registered', err))
+            })
+        }
+    </script>
 </body>
 </html>
