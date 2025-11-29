@@ -9,38 +9,62 @@
     <link rel="icon" type="image/png" href="icons/android/android-launchericon-144-144.png" />
 </head>
 <body>
-    <div id="view-add" class="view active">
-        <h1 id="title">Dodaj nową</h1>
+    <nav class="nav">
+        <button onclick="window.location.hash='list'" class="navBtn">Lista</button>
+        <button onclick="window.location.hash='add'" class="navBtn">Nowa</button>
+    </nav>
+    
+    <div id="viewAdd" class="view active">
+        <h1 id="title">Dodaj nową notatkę</h1>
         <div>
             <textarea id="noteText" placeholder="Tutaj pojawi się Twoja notatka spisana z dźwięku..."></textarea>
         </div>
         
-        <div class="audio-wrapper" id="audio-wrapper">
-            
-        </div>
+        <div class="audioWrapper" id="audioWrapperAdd"></div>
         
         <div id="recordDiv"><button id="recordBtn">Rozpocznij nagrywanie</button></div>
         
-        
         <div id="saveDiv">
-            <div><input id="checkbox" type="checkbox"><p>Zapisz z dźwiękiem</p></div>
+            <div><input id="checkbox" type="checkbox"><label for="checkbox">Zapisz z dźwiękiem</label></div>
             <button id="saveBtn">Zapisz notatkę</button>
         </div>
         
+        <!-- TODO Usunąć przycisk po testach -->
         <div><button id="testBtn">Odtwórz nagranie ostatniej notatki</button></div>
         
         <div id="errorMessageDiv"></div>
         <div id="mobileErrorMessageDiv"></div>
 
-        <div class="audiowrapper" id="test-audio-wrapper"></div>
+        <div class="audioWrapper" id="testAudioWrapper"></div>
     </div>
     
-    <div id="view-list" class="view">
-        <h1>Notatki</h1>
+    <div id="viewList" class="view">
+        <h1>Twoje notatki</h1>
+        
+        <div>
+            <ul id="notesList"></ul>
+
+            <div id="emptyList" style="display:none;">
+                <p>Brak notatek</p>
+                <button onclick="window.location.hash='add'">Dodaj nową</button>
+            </div>
+            <button id="testBtn1">Odczytaj losowy tekst</button>
+        </div>
     </div>
     
-    <div id="view-edit" class="view">
-        <h1>Edycja notatki</h1>
+    <div id="viewEdit" class="view">
+        <h1 id="title">Edycja notatki</h1>
+        <div>
+            <textarea id="editNoteText" placeholder="Treść notatki..."></textarea>
+        </div>
+        
+        <div class="audioWrapper" id="audioWrapperEdit"></div>
+        
+        <div id="updateDiv">
+            <button id="updateBtn">Zapisz notatkę</button>
+            <button id="deleteBtn">Usuń notatkę</button>
+            <button onclick="window.location.hash='list'" id="cancelBtn">Anuluj zmiany</button>
+        </div>
     </div>
     
     <script src="main.js"></script>

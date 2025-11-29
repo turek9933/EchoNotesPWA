@@ -54,34 +54,6 @@ h1 {
     color: rgb(3, 75, 3);
 }
 
-ul {
-    list-style: none;
-}
-li {
-    display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-}
-
-li button {
-    background-color: #f44336;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-}
-li input {
-    margin-right: 10px;
-    cursor: pointer;
-    padding: auto;
-    width: 20px;
-    height: 20px;
-}
-
 #form {
     display: flex;
     justify-content: center;
@@ -97,7 +69,6 @@ button {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    /* text-align: center; */
 }
 
 button:hover {
@@ -148,3 +119,71 @@ audio::-webkit-media-controls-time-remaining-display {
     justify-content: center;
     align-items: center;
 }
+
+
+#notesList {
+    padding: 0;
+    margin: 0;
+}
+
+.note {
+    margin: 10px 0;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #007BE5;
+}
+
+.noteHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+    border-bottom: 1px solid #007BE5;
+    padding: 5px 10px;
+}
+.notePreview {
+    width: 85%;
+    cursor: pointer;
+}
+.noteToggle {
+    width: 15%;
+    transition: transform 0.25s ease;
+    cursor: pointer;
+}
+
+.noteBody {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, padding 0.25s ease;
+}
+
+.noteBody.expanded {
+    max-height: 500px;
+    padding: 10px;
+    /* flex-direction: row; */
+}
+
+.noteBody.expanded .noteText {
+    width: 90%;
+    text-align: left;
+    padding-bottom: 20px;
+}
+
+.noteActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+.noteActions div {
+    cursor: pointer;
+    align-items: center;
+    display: flex;
+    padding: 2px;
+}
+
+.audioWrapper.list {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}   
