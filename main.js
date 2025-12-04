@@ -190,7 +190,26 @@ function dbAddNote(text, audio = null) {
         }
     }
 }
-
+async function dbUpdateText(noteId, text) {
+    try {
+        const oldData = await dbGetText(noteId);
+        db
+        .transaction("text", "readwrite")
+        .objectStore("text")
+        .put({
+            id: noteId,
+            text: text.trim(),
+            hasAudio: oldData.hasAudio,
+            createdAt: oldData.createdAt,
+            updatedAt: Date.now()
+        })
+        .onsuccess = ((e) => {
+            console.log(`Text of note updated.`);
+        })
+    } catch (e) {
+        console.error(e);
+    }
+}
 async function dbDeleteNote(noteId, audioId = null) {
     try {
         if (!audioId)
@@ -835,14 +854,20 @@ async function handleDeleteAudio(noteId, audioId = null) {
     }
 }
 
-cancelEditBtn.addEventListener('click', () => {
-    showView('list');
-});
 deleteAudioBtn.addEventListener('click', async () => {
     try {
         await handleDeleteAudio(getViewAndParams()[1].id);
     } catch (e) {
         console.error('Could not delete audio:\t', e);
+    }
+});
+updateBtn.addEventListener('click', async () => {
+    console.warn('Trying to update note');
+    try {
+        await dbUpdateText(getViewAndParams()[1].id, editNoteText.value);
+        window.location.hash = 'list';
+    } catch (e) {
+        console.error(e);
     }
 });
 deleteBtn.addEventListener('click', async () => {
@@ -853,6 +878,9 @@ deleteBtn.addEventListener('click', async () => {
     } catch (e) {
         console.error(e);
     }
+});
+cancelEditBtn.addEventListener('click', () => {
+    window.location.hash = 'list';
 });
 
 init();
