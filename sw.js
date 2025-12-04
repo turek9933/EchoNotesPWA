@@ -1,10 +1,11 @@
 const CACHE_NAME = 'echo-notes';
-const CACHE_VERSION = 1;
+const CACHE_VERSION = 2;
 const CACHE_FILES = [
     '/',
     '/index.html',
+    '/offline.html',
     '/main.js',
-    '/manifest.json',
+    '/manifest.webmanifest',
     '/style.css',
     '/fonts/Caveat-Regular.ttf',
     'icons/android/android-launchericon-48-48.png',
@@ -26,9 +27,9 @@ self.addEventListener('install', event => {
         caches
             .open(CACHE)
             .then(cache => cache.addAll(CACHE_FILES))
+            .then(() => self.skipWaiting())// Natychmiastowa aktywacja SW, po s-cache-owaniu danych
+            .catch((e) => console.error('Failed to cache files', e))
     );
-
-    self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -41,9 +42,9 @@ self.addEventListener('activate', event => {
                         .map(k => caches.delete(k))
                 )
             )
-    );
-
-    self.clients.claim();
+            .then(() => self.clients.claim())// Przejęcie kontroli nad wszystkimi klientami
+            .catch((e) => console.error('Failed to clear old caches', e))
+    ); 
 });
 
 function staleWhileRevalidate(request) {
@@ -57,7 +58,7 @@ function staleWhileRevalidate(request) {
                 cache.put(request, networkResponse.clone());
                 return networkResponse;
                 // W przypadku braku sieci zwróć cache
-            }).catch(() => cachedResponse);
+            }).catch((e) => console.warn('Failed to fetch cache in the background', e));
 
             // Natychmiastowa zwrotka z cache-a lub z sieci
             return cachedResponse || fetchPromise;
@@ -75,12 +76,24 @@ function cacheFirst(request) {
             if (response) return response;
 
             // Pobranie odpowiedzi z sieci
-            return fetch(request).then(fetchResponse => {
-                    // Zapisanie pobranej odpowiedzi w cache-u
-                    cache.put(request, fetchResponse.clone());
-                    // Zwrócenie pobranej odpowiedzi użytnikowi
-                    return fetchResponse;
-                })
+            return fetch(request)
+            .then(fetchResponse => {
+                // Sprawdzenie czy pobrana odpowiedz jest ok
+                // Jeśli fetch się udał, ale zakończył się 'dziwną' odpowiedzią,
+                // zwracamy ją do użytkownika, ale jej nie cache-ujemy
+                if (!fetchResponse?.ok) return fetchResponse;
+
+                // Klon odpowiedzi z sieci
+                const responseToCache = fetchResponse.clone();
+
+                // Zapisanie do cache-a
+                cache.put(request, responseToCache);
+                return fetchResponse;
+            })
+            .catch((e) => {
+                console.error('Failed to fetch cache from network', e);
+                return caches.match('/offline.html');
+            });
         })
     });
 }
@@ -94,7 +107,7 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    if (url.pathname.match(/\.(png|jpg|gif|css|js|ttf)/)) {
+    if (url.pathname.match(/\.(png|jpg|gif|ttf)/)) {
         console.log('Static assets -> Cache first');
         event.respondWith(cacheFirst(request));
         return;

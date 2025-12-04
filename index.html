@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EchoNotes</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" href="icons/android/android-launchericon-144-144.png" />
 </head>
 <body>
@@ -22,27 +22,23 @@
         
         <div class="audioWrapper" id="audioWrapperAdd"></div>
         
-        <div id="recordDiv"><button id="recordBtn">Rozpocznij nagrywanie</button></div>
+        <div class="recordDiv" id="recordDiv"><button id="recordBtn">Rozpocznij nagrywanie</button></div>
         
-        <div id="saveDiv">
-            <div><input id="checkbox" type="checkbox"><label for="checkbox">Zapisz z dźwiękiem</label></div>
+        <div class="saveDiv" id="saveDiv">
+            <div class="checkboxDiv"><input id="checkbox" type="checkbox"><label for="checkbox">Zapisz z dźwiękiem</label></div>
             <button id="saveBtn">Zapisz notatkę</button>
         </div>
-        
-        <!-- TODO Usunąć przycisk po testach -->
-        <div><button id="testBtn">Odtwórz nagranie ostatniej notatki</button></div>
         
         <div id="errorMessageDiv"></div>
         <div id="mobileErrorMessageDiv"></div>
 
-        <div class="audioWrapper" id="testAudioWrapper"></div>
     </div>
     
     <div id="viewList" class="view">
         <h1>Twoje notatki</h1>
         
-        <div id="notesListWrapper">
-            <ul id="notesList"></ul>
+        <div class="notesListWrapper" id="notesListWrapper">
+            <ul class="notesList" id="notesList"></ul>
 
             <div id="emptyList" style="display:none;">
                 <p>Brak notatek</p>
@@ -61,7 +57,7 @@
         
         <div class="audioWrapper" id="audioWrapperEdit"></div>
         
-        <div id="updateDiv">
+        <div class="updateDiv" id="updateDiv">
             <button id="deleteAudioBtn" style="display:none;">Usuń nagranie</button>
             <button id="updateBtn">Zapisz notatkę</button>
             <button id="deleteBtn">Usuń notatkę</button>

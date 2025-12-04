@@ -183,8 +183,6 @@ function dbAddNote(text, audio = null) {
                 noteId: noteId,
                 blob: audio
             });
-            // TODO
-            idLastRecordedNote = noteId;
         } catch (e) {
             console.error(e);
         }
@@ -268,9 +266,6 @@ async function dbDeleteAudio(noteId, audioId = null) {
 }
 
 
-
-
-
 //-----------------------------------------------------------------------------
 // Routing i obsługa widoków na podstawie hash-y w URL
 // Przejścia między widokami za pomocą window.location.hash
@@ -283,15 +278,11 @@ const views = {
     list: document.getElementById('viewList'),
     edit: document.getElementById('viewEdit'),
 }
-
 const navBtns = {
     add: document.getElementById('navAddBtn'),
     list: document.getElementById('navListBtn'),
 }
 
-// TODO Sprawdzić czy curretView jest faktycznie potrzebne
-// TODO Zmiana domyślnego na 'list'
-let currentView = 'add';
 const getViewAndParams = () => {
     const dividedHashAndParams = window.location.hash.slice(1).split('?');
     const params = {};
@@ -304,8 +295,7 @@ const getViewAndParams = () => {
     return [dividedHashAndParams[0], params];
 }
 
-// TODO Zmiana domyślnego na view-list
-function showView(view = 'add', params = undefined) {
+function showView(view = 'list', params = undefined) {
     Object.values(views).forEach(view => {
         view.classList.remove('active');
     });
@@ -314,10 +304,7 @@ function showView(view = 'add', params = undefined) {
     })
     
     if (views[view]) {
-        views[view].classList.add('active');
-        currentView = view;
-        
-        // TODO Dodać handler dla widoków
+        views[view].classList.add('active');        
         if (view == 'list') {
             navBtns[view].classList.add('active');
             goToList();
@@ -327,6 +314,7 @@ function showView(view = 'add', params = undefined) {
         }
         if (view == 'add') {
             navBtns[view].classList.add('active');
+            goToAdd();
         }
     } else {
         console.error(`View ${view} does not exist`);
@@ -346,8 +334,7 @@ function initRouter() {
     if (hash && views[hash]) {
         showView(hash, params);
     } else {
-        // TODO Zmiana domyślnego na 'add'
-        const defaultView = 'add';
+        const defaultView = 'list';
         window.location.hash = defaultView;
         showView(defaultView);
     }
@@ -366,11 +353,13 @@ function goToEdit(param = undefined) {
     if (param && param.id) {
         renderEditView(param.id);
     } else {
-        // TODO Zmiana domyślnego na 'add'
-        const defaultView = 'add';
+        const defaultView = 'list';
         window.location.hash = defaultView
         showNotes();
     }
+}
+function goToAdd() {
+    // Tu nic nie trzeba robić, wystarczy wyświetlić formularz, co załatwia ustawienie klasie 'active'
 }
 
 //-----------------------------------------------------------------------------
@@ -562,45 +551,12 @@ saveBtn.addEventListener('click', () => {
     }
 });
 
-let idLastRecordedNote = null;// TODO
-const testBtn = document.getElementById('testBtn');
-const testAudioDiv = document.getElementById('testAudioWrapper');
-testBtn.addEventListener("click", async () => {
-    if (!!idLastRecordedNote) {
-        try {
-            const result = await dbGetAudio(null, idLastRecordedNote);
-            if (!result || !result.blob) {
-                console.warn("No audio for this note");
-                return;
-            }
-            
-            const audio = new Audio(URL.createObjectURL(result.blob));
-            audio.controls = true;
-            
-            if (testAudioDiv.firstChild) {
-                testAudioDiv.removeChild(testAudioDiv.firstChild);
-                testAudioDiv.style.display = "none";
-            }
-            testAudioDiv.appendChild(audio);
-            testAudioDiv.style.display = "block";
-        } catch (e) {
-            console.error(e);
-        }
-    }
-});
-
-
 
 
 
 //-----------------------------------------------------------------------------
 // Widok ogólny, listy wszystkich notatek
 //-----------------------------------------------------------------------------
-
-
-// {id: '6186d8ba-147b-491b-b9c9-b2e8e4eb7e2c', text: 'słowo', hasAudio: true, createdAt: 1764180604001, updatedAt: 1764180604001}
-// {id: '7763c555-8f5b-4d27-8778-3c8eda0dd28b', text: 'słowo', hasAudio: false, createdAt: 1764180602514, updatedAt: 1764180602514}
-
 function createSvgIcon(pathD, size = 20) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
 
@@ -806,8 +762,6 @@ function speakText(text) {
         synth.speak(utterance);
     }
 }
-
-// TODO To chyba trzeba przenieść do innego miejsca!!!!
 notesList.addEventListener('click', handleNoteClick);
 
 
