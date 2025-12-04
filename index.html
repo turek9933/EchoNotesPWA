@@ -10,8 +10,8 @@
 </head>
 <body>
     <nav class="nav">
-        <button onclick="window.location.hash='list'" class="navBtn">Lista</button>
-        <button onclick="window.location.hash='add'" class="navBtn">Nowa</button>
+        <button onclick="window.location.hash='list'" class="navBtn" id="navListBtn">Lista</button>
+        <button onclick="window.location.hash='add'" class="navBtn" id="navAddBtn">Nowa</button>
     </nav>
     
     <div id="viewAdd" class="view active">
@@ -41,14 +41,13 @@
     <div id="viewList" class="view">
         <h1>Twoje notatki</h1>
         
-        <div>
+        <div id="notesListWrapper">
             <ul id="notesList"></ul>
 
             <div id="emptyList" style="display:none;">
                 <p>Brak notatek</p>
                 <button onclick="window.location.hash='add'">Dodaj nową</button>
             </div>
-            <button id="testBtn1">Odczytaj losowy tekst</button>
         </div>
     </div>
     
@@ -56,11 +55,14 @@
         <h1 id="title">Edycja notatki</h1>
         <div>
             <textarea id="editNoteText" placeholder="Treść notatki..."></textarea>
+            <p id="editCreatedAt"></p>
+            <p id="editUpdatedAt"></p>
         </div>
         
         <div class="audioWrapper" id="audioWrapperEdit"></div>
         
         <div id="updateDiv">
+            <button id="deleteAudioBtn" style="display:none;">Usuń nagranie</button>
             <button id="updateBtn">Zapisz notatkę</button>
             <button id="deleteBtn">Usuń notatkę</button>
             <button onclick="window.location.hash='list'" id="cancelBtn">Anuluj zmiany</button>

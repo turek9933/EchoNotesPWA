@@ -1,5 +1,6 @@
 @font-face {
     font-family: 'CzechHandwriting';
+    font-display: swap;
     src: url('fonts/Caveat-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
@@ -29,15 +30,39 @@ body {
     padding: 0;
     background-color: #EBB862;
     color: #007BE5;
-    font-size: x-large;
+    font-size: medium;
     font-family: 'CzechHandwriting';
     align-items: center;
     justify-content: center;
 
 }
 
+.nav {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+.navBtn {
+    background-color: #FFF;
+    font-weight: bold;
+    color: #007BE5;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.navBtn:hover {
+    background-color: #007BE5;
+    color: #FFF;
+}
+.navBtn:hover svg path {
+    fill: #FFF;
+}
+.navBtn.active svg path {
+    fill: #EBB862;
+}
+
 p {
-    text-align: center;
+    white-space: pre-wrap;
 }
 
 div {
@@ -84,6 +109,7 @@ textarea {
     margin-bottom: 10px;
     width: 80%;
     height: 20vh;
+    font-size: larger;
 }
 
 audio::-webkit-media-controls-panel {
@@ -110,7 +136,7 @@ audio::-webkit-media-controls-time-remaining-display {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: small;
+    font-size: medium;
     margin: 20px 0 20px 0;
 }
 #saveDiv div {
@@ -120,19 +146,20 @@ audio::-webkit-media-controls-time-remaining-display {
     align-items: center;
 }
 
-
+#notesListWrapper {
+    width: 80%;
+    margin: 0 auto;
+}
 #notesList {
     padding: 0;
     margin: 0;
 }
-
 .note {
     margin: 10px 0;
     background-color: #fff;
     border-radius: 5px;
     border: 1px solid #007BE5;
 }
-
 .noteHeader {
     display: flex;
     justify-content: space-between;
@@ -186,4 +213,13 @@ audio::-webkit-media-controls-time-remaining-display {
     display: flex;
     justify-content: flex-end;
     margin-top: 10px;
-}   
+}
+
+#updateDiv {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0 20px 0;
+    gap: 10px;
+}

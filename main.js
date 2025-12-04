@@ -18,6 +18,15 @@ let mediaRecorder;
 let recognition = null;
 let audioChunk = [];
 let lastRecordedBlob = null;
+// Widok edycji notatki
+const editNoteText = document.getElementById('editNoteText');
+const editCreatedAt = document.getElementById('editCreatedAt');
+const editUpdatedAt = document.getElementById('editUpdatedAt');
+const audioEditDiv = document.getElementById('audioWrapperEdit');
+const updateBtn = document.getElementById('updateBtn');
+const deleteAudioBtn = document.getElementById('deleteAudioBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const cancelEditBtn = document.getElementById('cancelBtn');
 
 
 let db;
@@ -47,11 +56,26 @@ function initDb () {
     })
 }
 
+function iconsInNavBar() {
+    const navListBtn = document.getElementById('navListBtn');
+    navListBtn.textContent = '';
+    navListBtn.appendChild(
+        createSvgIcon("M9.35547 0.235089C9.72769 -0.0783629 10.2723 -0.0783629 10.6445 0.235089L19.6445 7.81419C19.8698 8.00419 20 8.28411 20 8.57884V18.9997C19.9999 19.5519 19.5522 19.9997 19 19.9997H1C0.447803 19.9997 0.000141967 19.5519 0 18.9997V8.57884C0 8.28411 0.130186 8.00419 0.355469 7.81419L9.35547 0.235089ZM2 9.04368V17.9997H6.63184V11.4206C6.63192 10.8684 7.0796 10.4206 7.63184 10.4206H12.3682C12.9204 10.4206 13.3681 10.8684 13.3682 11.4206V17.9997H18V9.04368L10 2.30638L2 9.04368ZM8.63184 17.9997H11.3682V12.4206H8.63184V17.9997Z")
+    );
+
+    const navAddBtn = document.getElementById('navAddBtn');
+    navAddBtn.textContent = '';
+    navAddBtn.appendChild(
+        createSvgIcon('M10 0C4.477 0 0 4.477 0 10C0 15.523 4.477 20 10 20C15.523 20 20 15.523 20 10C20 4.477 15.523 0 10 0ZM15 11H11V15H9V11H5V9H9V5H11V9H15V11Z')
+    );
+}
+
 async function init() {
     console.log('App inicializing...');
     try {
         await initDb();
         initRouter();
+        iconsInNavBar();
         console.log('App initialized.');
     } catch (e) {
         console.error(e);
@@ -68,6 +92,19 @@ function dbGetAllText() {
             const tx = db.transaction("text", "readonly");
             const store = tx.objectStore("text");
             const req = store.getAll();
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+function dbGetText(noteId) {
+    return new Promise((resolve, reject) => {
+        try {
+            const tx = db.transaction("text", "readonly");
+            const store = tx.objectStore("text");
+            const req = store.get(noteId);
             req.onsuccess = (e) => resolve(e.target.result);
             req.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
         } catch (e) {
@@ -104,14 +141,19 @@ function dbGetAudioId(noteId) {
             const store = tx.objectStore("audio");
             const index = store.index("noteId");
             const req = index.get(noteId);
-            req.onsuccess = (e) => resolve(e.target.result.id);
+            req.onsuccess = (e) => {
+                if (!e.target.result) {
+                    resolve(null);
+                } else {
+                    resolve(e.target.result.id);
+                }
+            }
             req.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
         } catch (e) {
             reject(e);
         }
     });
 }
-
 function dbAddNote(text, audio = null) {
     const noteId = crypto.randomUUID();
     try {
@@ -160,6 +202,26 @@ async function dbDeleteNote(noteId, audioId = null) {
             textReq.onsuccess = (e) => resolve(e);
             textReq.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
         })
+        if (audioId) {
+            await new Promise((resolve, reject) => {
+                const audioTx = db.transaction("audio", "readwrite");
+                const audioStore = audioTx.objectStore("audio");
+                const audioReq = audioStore.delete(audioId);
+                audioReq.onsuccess = (e) => resolve(e);
+                audioReq.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
+            })
+        }
+        return true;
+    } catch (e) {
+        console.error("DB delete error", e);
+        throw e;
+    }
+}
+async function dbDeleteAudio(noteId, audioId = null) {
+    try {
+        if (!audioId)
+            audioId = await dbGetAudioId(noteId);
+
         await new Promise((resolve, reject) => {
             const audioTx = db.transaction("audio", "readwrite");
             const audioStore = audioTx.objectStore("audio");
@@ -167,9 +229,21 @@ async function dbDeleteNote(noteId, audioId = null) {
             audioReq.onsuccess = (e) => resolve(e);
             audioReq.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
         })
+        await new Promise((resolve, reject) => {
+            const textTx = db.transaction("text", "readwrite");
+            const textStore = textTx.objectStore("text");
+            const textReq = textStore.get(noteId);
+            textReq.onsuccess = (e) => {
+                textReq.result.hasAudio = false;
+                textReq.result.updatedAt = Date.now();
+                textStore.put(textReq.result);
+                resolve(e);
+            }
+            textReq.onerror = (e) => reject(e.target.error || new Error("DB request failed"));
+        })
         return true;
     } catch (e) {
-        console.error("DB delete error", e);
+        console.error("DB delete audio error", e);
         throw e;
     }
 }
@@ -190,15 +264,35 @@ const views = {
     list: document.getElementById('viewList'),
     edit: document.getElementById('viewEdit'),
 }
+
+const navBtns = {
+    add: document.getElementById('navAddBtn'),
+    list: document.getElementById('navListBtn'),
+}
+
 // TODO Sprawdzić czy curretView jest faktycznie potrzebne
 // TODO Zmiana domyślnego na 'list'
 let currentView = 'add';
+const getViewAndParams = () => {
+    const dividedHashAndParams = window.location.hash.slice(1).split('?');
+    const params = {};
+    if (dividedHashAndParams[1]) {
+        dividedHashAndParams[1].split('&').forEach(param => {
+            const [key, value] = param.split('=');
+            params[key] = value;
+        });
+    }
+    return [dividedHashAndParams[0], params];
+}
 
 // TODO Zmiana domyślnego na view-list
-function showView(view = 'add') {
+function showView(view = 'add', params = undefined) {
     Object.values(views).forEach(view => {
         view.classList.remove('active');
     });
+    Object.values(navBtns).forEach(btn => {
+        btn.classList.remove('active');
+    })
     
     if (views[view]) {
         views[view].classList.add('active');
@@ -206,26 +300,32 @@ function showView(view = 'add') {
         
         // TODO Dodać handler dla widoków
         if (view == 'list') {
+            navBtns[view].classList.add('active');
             goToList();
         }
-        
+        if (view == 'edit') {
+            goToEdit(params);
+        }
+        if (view == 'add') {
+            navBtns[view].classList.add('active');
+        }
     } else {
         console.error(`View ${view} does not exist`);
     }
 }
 // Obsługa zmiany URL i aktualizacja widoków
 window.addEventListener('hashchange', () => {
-    const view = window.location.hash.slice(1);
+    const [view, params] = getViewAndParams();
     if (view && views[view]) {
-        showView(view);
+        showView(view, params);
     } else {
         console.error(`View ${view} does not exist`);
     }
 });
 function initRouter() {
-    const hash = window.location.hash.slice(1);
+    const [hash, params] = getViewAndParams();
     if (hash && views[hash]) {
-        showView(hash);
+        showView(hash, params);
     } else {
         // TODO Zmiana domyślnego na 'add'
         const defaultView = 'add';
@@ -242,6 +342,16 @@ function initRouter() {
 
 function goToList() {
     showNotes();
+}
+function goToEdit(param = undefined) {
+    if (param && param.id) {
+        renderEditView(param.id);
+    } else {
+        // TODO Zmiana domyślnego na 'add'
+        const defaultView = 'add';
+        window.location.hash = defaultView
+        showNotes();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -497,7 +607,7 @@ function createSvgIcon(pathD, size = 20) {
 }
 
 // Otrzymuje 'pudełko' na element <audio>, usuwa, jeśli jest w nim stary odtwarzacz i dodaje nowy
-function handlePlayOriginalAudio(audioElementDiv, blob) {
+function handlePlayOriginalAudio(audioElementDiv, blob, playAudio = true) {
     try {
         const audio = audioElementDiv.querySelector('audio');
         if (audio) {
@@ -510,7 +620,8 @@ function handlePlayOriginalAudio(audioElementDiv, blob) {
             newAudio.src = URL.createObjectURL(blob);
             newAudio.load();
             newAudio.controls = true;
-            newAudio.play();
+            newAudio.autoplay = playAudio;// Nie słucha się mnie przeglądarka :(((
+            playAudio ? newAudio.play() : newAudio.pause();
             audioElementDiv.appendChild(newAudio);
         }
     } catch (e) {
@@ -554,7 +665,7 @@ async function handleNoteClick(e) {
         return;
     }
 
-    if (e.target.closest('noteEdit')) {
+    if (e.target.closest('.noteEdit')) {
         window.location.hash = `edit?id=${noteId}`;
         return;
     }
@@ -584,8 +695,9 @@ function renderNote(note) {
     
     const notePreview = document.createElement('div');
     notePreview.classList.add("notePreview");
+    const endline = note.text.indexOf('\n') !== -1 ? note.text.indexOf('\n') : note.text.length;
     notePreview.textContent = note.text.length > 40 ? 
-        note.text.substring(0, 40) + '...' : note.text;
+        note.text.substring(0, 40).substring(0, endline) + '...' : note.text.substring(0, endline);
     noteHeader.appendChild(notePreview);
 
     const noteToggle = document.createElement('div');
@@ -597,7 +709,7 @@ function renderNote(note) {
     noteBody.classList.add("noteBody");
     noteDiv.appendChild(noteBody);
 
-    const noteText = document.createElement('div');
+    const noteText = document.createElement('p');
     noteText.classList.add("noteText");
     noteText.textContent = note.text;
     noteBody.appendChild(noteText);
@@ -675,17 +787,72 @@ function speakText(text) {
         synth.speak(utterance);
     }
 }
-const testBtn1 = document.getElementById('testBtn1');
-testBtn1.addEventListener("click", async () => {
-    console.log("BTN@1");
-    console.log(await dbGetAllText());
-    // speakText('Ala ma kota i kot lubi inne koty!');
-    dbDeleteNote('03cad6d8-466f-42f5-b884-d11085db6711');
-    console.log(await dbGetAllText());
-});
 
 // TODO To chyba trzeba przenieść do innego miejsca!!!!
 notesList.addEventListener('click', handleNoteClick);
 
+
+//-----------------------------------------------------------------------------
+// Widok edycji notatki
+//-----------------------------------------------------------------------------
+
+async function renderEditView(noteId) {
+    try {
+        while (audioEditDiv.firstChild) {
+            audioEditDiv.removeChild(audioEditDiv.firstChild);
+        }
+        const noteToEdit = await dbGetText(noteId);
+        if (!noteToEdit) {
+            window.location.hash = 'list';
+            showView('list');
+            return;
+        }
+        editNoteText.value = noteToEdit.text;
+        editCreatedAt.textContent = `Dodano: ${new Date(noteToEdit.createdAt).toLocaleString()}`;
+        editUpdatedAt.textContent = `Ostatnia edycja: ${new Date(noteToEdit.updatedAt).toLocaleString()}`;
+        if (noteToEdit.hasAudio) {
+            const audio = await dbGetAudio(null, noteId);
+            if (audio && audio.blob) {
+                handlePlayOriginalAudio(audioEditDiv, audio.blob, false);
+            }
+            deleteAudioBtn.style.display = "block";
+        } else if (!noteId.hasAudio) {
+            deleteAudioBtn.style.display = "none";
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function handleDeleteAudio(noteId, audioId = null) {
+    try {
+        await dbDeleteAudio(noteId, audioId);
+        while (audioEditDiv.firstChild) {
+            audioEditDiv.removeChild(audioEditDiv.firstChild);
+        };
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+cancelEditBtn.addEventListener('click', () => {
+    showView('list');
+});
+deleteAudioBtn.addEventListener('click', async () => {
+    try {
+        await handleDeleteAudio(getViewAndParams()[1].id);
+    } catch (e) {
+        console.error('Could not delete audio:\t', e);
+    }
+});
+deleteBtn.addEventListener('click', async () => {
+    try {
+        const id = getViewAndParams()[1].id;
+        await dbDeleteNote(id);
+        showView('list');
+    } catch (e) {
+        console.error(e);
+    }
+});
 
 init();
