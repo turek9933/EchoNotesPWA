@@ -29,6 +29,7 @@ const updateBtn = document.getElementById('updateBtn');
 const deleteAudioBtn = document.getElementById('deleteAudioBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const cancelEditBtn = document.getElementById('cancelBtn');
+const editMessageDiv = document.getElementById('editMessageDiv');
 
 
 let db;
@@ -450,14 +451,12 @@ async function getAudioStream() {
         throw new Error("Audio recording is not supported in this browser");
     }
     try {
-        console.log("Getting audio stream...");
-        console.info(navigator.mediaDevices.getUserMedia);
         return await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-        if (location.protocol !== "https:" && location.protocol !== "localhost") {
+        if (location.protocol !== "https:" && location.hostname !== "localhost") {
             throw new Error("Wrong protocol. Recording only works on HTTPS");
         }
-        if (e.name === "NotAllowedError" || e.name === "SeciurityError") {
+        if (e.name === "NotAllowedError" || e.name === "SecurityError") {
             throw new Error("No permission to use microphone");
         }
         if (e.name === "NotFoundError") {
@@ -791,6 +790,7 @@ async function renderEditView(noteId) {
         } else if (!noteId.hasAudio) {
             deleteAudioBtn.style.display = "none";
         }
+        editMessageDiv.textContent = "";
     } catch (e) {
         console.error(e);
     }
@@ -809,7 +809,15 @@ async function handleDeleteAudio(noteId, audioId = null) {
 
 deleteAudioBtn.addEventListener('click', async () => {
     try {
-        await handleDeleteAudio(getViewAndParams()[1].id);
+        const noteId = getViewAndParams()[1].id;
+        if (confirm('Czy na pewno chcesz usunąć zapis dźwięku?')) {
+            await handleDeleteAudio(noteId);
+            deleteAudioBtn.style.display = "none";
+            editMessageDiv.textContent = "Usunięto zapis dźwięku";
+        } else {
+            return;
+        }
+
     } catch (e) {
         console.error('Could not delete audio:\t', e);
     }
@@ -824,9 +832,14 @@ updateBtn.addEventListener('click', async () => {
 });
 deleteBtn.addEventListener('click', async () => {
     try {
-        const id = getViewAndParams()[1].id;
-        await dbDeleteNote(id);
-        window.location.hash = 'list';
+        const noteId = getViewAndParams()[1].id;
+        if (confirm('Czy na pewno chcesz usunać notatke?')) {
+            await dbDeleteNote(noteId);
+            editMessageDiv.textContent = "Usunięto notatkę";
+            window.location.hash = 'list';
+        } else {
+            return;
+        }
     } catch (e) {
         console.error(e);
     }
