@@ -101,18 +101,17 @@ function cacheFirst(request) {
 self.addEventListener('fetch', event => {
     const request = event.request;
     const url = new URL(request.url);
-
+    
+    // Wybieranie strategi odpowiedzi
     if (request.method !== 'GET') {
         console.log('Mutation -> Network only');
         return;
     }
-
     if (url.pathname.match(/\.(png|jpg|gif|ttf)/)) {
         console.log('Static assets -> Cache first');
         event.respondWith(cacheFirst(request));
         return;
     }
-
     console.log('Default -> Stale while revalidate');
     event.respondWith(staleWhileRevalidate(request));
 });

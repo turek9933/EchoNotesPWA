@@ -7,6 +7,7 @@ const colorAccent = "#007BE5";
 // Widok wyświetlania notatek
 const notesList = document.getElementById('notesList');
 const emptyList = document.getElementById('emptyList');
+
 // Widok dodawania notatki
 const recordBtn = document.getElementById('recordBtn');
 const saveBtn = document.getElementById('saveBtn');
@@ -18,6 +19,7 @@ let mediaRecorder;
 let recognition = null;
 let audioChunk = [];
 let lastRecordedBlob = null;
+
 // Widok edycji notatki
 const editNoteText = document.getElementById('editNoteText');
 const editCreatedAt = document.getElementById('editCreatedAt');
@@ -283,6 +285,7 @@ const navBtns = {
     list: document.getElementById('navListBtn'),
 }
 
+// Zwraca parę [<nazwa_hasha_widoku>, <obiekt_z_parametrami>]
 const getViewAndParams = () => {
     const dividedHashAndParams = window.location.hash.slice(1).split('?');
     const params = {};
@@ -345,7 +348,6 @@ function initRouter() {
 //-----------------------------------------------------------------------------
 // Handlery przejść między widokami
 //-----------------------------------------------------------------------------
-
 function goToList() {
     showNotes();
 }
@@ -359,7 +361,7 @@ function goToEdit(param = undefined) {
     }
 }
 function goToAdd() {
-    // Tu nic nie trzeba robić, wystarczy wyświetlić formularz, co załatwia ustawienie klasie 'active'
+    // Tu nic nie trzeba robić, wystarczy wyświetlić formularz, co dzieje się automatycznie nadając klasę 'active'
 }
 
 //-----------------------------------------------------------------------------
@@ -407,7 +409,7 @@ function moblileVersionErrorMessage() {
 }
 
 // Sprawdzenie czy przeglądarka w ogóle obsługuje rozpoznawanie mowy
-// Jeśli obsługuje, to tworzymy obiekt do ciągłęgo rozpoznawania mowy.
+// Jeśli obsługuje, to tworzymy obiekt do ciągłego rozpoznawania mowy.
 // Rozpoznane wyniki dopisujemy do tekstu notatki
 // Z racji na działanie przeglądarki na Androidzie, rozpoznawanie mowy jest wyłączone!
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -447,22 +449,21 @@ async function getAudioStream() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Audio recording is not supported in this browser");
     }
-
     try {
-        return await navigator.mediaDevices.getUserMedia({ audio: true});
+        console.log("Getting audio stream...");
+        console.info(navigator.mediaDevices.getUserMedia);
+        return await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
+        if (location.protocol !== "https:" && location.protocol !== "localhost") {
+            throw new Error("Wrong protocol. Recording only works on HTTPS");
+        }
         if (e.name === "NotAllowedError" || e.name === "SeciurityError") {
             throw new Error("No permission to use microphone");
         }
         if (e.name === "NotFoundError") {
             throw new Error("Microphone not found");
         }
-        if (location.protocol !== "https:") {
-            throw new Error("Wrong protocol. Recording only works on HTTPS");
-        }
-
         throw new Error("Could not get audio stream: " + e.message);
-
     }
 }
 
@@ -488,6 +489,7 @@ recordBtn.addEventListener('click', async () => {
                 if (e.data.size > 0) audioChunk.push(e.data);
             }
 
+            // Po zakończeniu nagrywek, dodajemy nowy element <audio> i odtwarzamy nagranie
             mediaRecorder.onstop = async () => {
                 const blob = new Blob(audioChunk, { type: 'audio/wav' });
                 lastRecordedBlob = blob;
@@ -552,8 +554,6 @@ saveBtn.addEventListener('click', () => {
 });
 
 
-
-
 //-----------------------------------------------------------------------------
 // Widok ogólny, listy wszystkich notatek
 //-----------------------------------------------------------------------------
@@ -577,11 +577,10 @@ function createSvgIcon(pathD, size = 20) {
         path.setAttribute('d', pathD);
         svg.appendChild(path);
     }
-
     return svg;
 }
 
-// Otrzymuje 'pudełko' na element <audio>, usuwa, jeśli jest w nim stary odtwarzacz i dodaje nowy
+// Otrzymuje ID <div>-a, 'pudełko' na element <audio>, usuwa, jeśli jest w nim stary odtwarzacz i dodaje nowy
 function handlePlayOriginalAudio(audioElementDiv, blob, playAudio = true) {
     try {
         const audio = audioElementDiv.querySelector('audio');
@@ -595,7 +594,7 @@ function handlePlayOriginalAudio(audioElementDiv, blob, playAudio = true) {
             newAudio.src = URL.createObjectURL(blob);
             newAudio.load();
             newAudio.controls = true;
-            newAudio.autoplay = playAudio;// Nie słucha się mnie przeglądarka :(((
+            newAudio.autoplay = playAudio;
             playAudio ? newAudio.play() : newAudio.pause();
             audioElementDiv.appendChild(newAudio);
         }
@@ -610,23 +609,24 @@ async function handleNoteClick(e) {
 
     const noteId = noteDiv.dataset.id;
 
+    // Kliknięcie na zwiniętą notatkę:
+    // - odtwarza syntezę tekstu notatki, jeśli naciśniemy na tekst
+    // - rozwija notatkę, jeśli naciśniemy dookoła tekstu w zwiniętą notatkę 
     if (e.target.classList.contains('notePreview')) {
         const text = noteDiv.querySelector('.noteText').textContent;
         speakText(text);
         return;
     }
-    
     if (e.target.closest('.noteHeader')) {
         const body = noteDiv.querySelector('.noteBody');
-        const toggle = noteDiv.querySelector('.noteToggle');
         
         const isOpen = body.classList.contains('expanded');
         
         document
-        .querySelectorAll('.noteBody.expanded')
-        .forEach(el => {
-            el.classList.remove('expanded');
-        });
+            .querySelectorAll('.noteBody.expanded')
+            .forEach(el => {
+                el.classList.remove('expanded');
+            });
         
         if(!isOpen) {
             body.classList.add('expanded');
@@ -656,7 +656,6 @@ async function handleNoteClick(e) {
         }
         return;
     }
-
 }
 
 function renderNote(note) {
@@ -749,6 +748,7 @@ async function showNotes() {
 
 }
 
+// Tworzenie obiektu Syntezy mowy i odtworzenie tekstu z argumentu
 function speakText(text) {
     const synth = window.speechSynthesis;
     const utterance = new SpeechSynthesisUtterance(text);
@@ -768,7 +768,6 @@ notesList.addEventListener('click', handleNoteClick);
 //-----------------------------------------------------------------------------
 // Widok edycji notatki
 //-----------------------------------------------------------------------------
-
 async function renderEditView(noteId) {
     try {
         while (audioEditDiv.firstChild) {
@@ -816,7 +815,6 @@ deleteAudioBtn.addEventListener('click', async () => {
     }
 });
 updateBtn.addEventListener('click', async () => {
-    console.warn('Trying to update note');
     try {
         await dbUpdateText(getViewAndParams()[1].id, editNoteText.value);
         window.location.hash = 'list';
@@ -828,7 +826,7 @@ deleteBtn.addEventListener('click', async () => {
     try {
         const id = getViewAndParams()[1].id;
         await dbDeleteNote(id);
-        showView('list');
+        window.location.hash = 'list';
     } catch (e) {
         console.error(e);
     }
