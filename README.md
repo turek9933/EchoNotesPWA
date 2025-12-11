@@ -1,53 +1,56 @@
-# pwa_hosting_test
+# EchoNotesPWA
+### Tomasz Turek
+2025
 
+EchoNotes to prosta aplikacja przeglądarkowa, która pozwala na tworzenie, osdłuchiwanie i edycję notatek w formie tekstowej na podstawie nagranego audio. Projekt działa po stronie użytkownika. Wykorzystuje technologie dostępne w przeglądarce m.in. IndexedDB, MediaRecorder, Web Speech API. Aplikajca korzysta z routingu opartego o hash oraz z funkcjonalności PWA.
 
+## Funkcje
+- Nagrywanie notatek audio i przechowywanie ich bezpośrednio w przeglądarce.
+- Rozpoznawanie mowy (dostępne tylko w Chrome na PC).
+- Zapis treści notatki oraz orginalnego audio w IndexedDB.
+- Podgląd notatek wraz z możliwością odsłuchu poprzez syntezę mowy lub odtworzenie orginalnego audio.
+- Edycja notatek - zmiana treści, usunięcie audio.
+- Routing oparty na adresie hash
+- Działanie offline (z wyjątkiem Web Speech API).
 
-## Kryteria Projektu
+## Technologie
+- HTML5
+- CSS3
+- JavaScript
+- IndexedDB
+- MediaRecorder API
+- Web Speech API (rozpoznawanie i synteza mowy)
+- Service Worker, manifest
 
-Technologie: HTML, CSS, JavaScript
+## Struktura projektu
+```
+/
+|- fonts
+|- icons
+|- EchoNotes.png
+|- index.html
+|- main.js
+|- manifest.webmanifest
+|- offline.html
+|- README.md
+|- style.css
+|- sw.js
+```
 
-1. Aplikacja powinna dać się zainstalować:
-- Wyjaśnienie: Aplikacja powinna posiadać plik manifestu, który określa metadane aplikacji, między innymi takie jak nazwa, ikony, kolor motywu i start_url. Dzięki temu użytkownicy będą mogli dodać aplikację do ekranu głównego swojego urządzenia.
+## Uruchomienie projektu
 
-2. Wykorzystanie natywnych możliwości urządzenia:
-- Wyjaśnienie: Aplikacja powinna wykorzystywać co najmniej dwie natywne funkcję urządzenia, taką jak dostęp do kamery, mikrofonu, geolokalizacji, powiadomień push itp.
-- Dodatkowe kryterium: Studenci powinni być w stanie opisać, jakie natywne funkcje zostały wykorzystane i jak je zaimplementowali.
+Ze względu na wymagane połączenie HTTPS dla użytych API zalecane jest korzystanie z wersji udostępnionej w sieci pod adresem:
+https://echonotespwa.netlify.app/
 
-3. Aplikacja powinna działać w trybie offline:
-- Wyjaśnienie: Aplikacja powinna korzystać z Service Workers i Cache API, aby przechowywać zasoby i umożliwiać działanie aplikacji bez dostępu do internetu.
-- Dodatkowe kryterium: Aplikacja powinna informować użytkownika o braku połączenia i oferować funkcje dostępne offline.
+## Kompatybilność wybranych funkcji
 
-4. Min. 3 widoki ze spójnym flow:
-- Wyjaśnienie: Aplikacja powinna posiadać co najmniej trzy różne ekrany lub widoki, które są logicznie powiązane i oferują spójne doświadczenie użytkownika.
-- Dodatkowe kryterium: Każdy widok powinien posiadać jasno zdefiniowany cel i funkcjonalność, a przejścia między widokami powinny być intuicyjne.
+Aplikacja działa najlepiej w przeglądarce Chrome. Część funkcji działa na przeglądarkach opartych na Chromium, lecz zdażają się problemy. 
 
-5. Aplikacja postawiona na hostingu:
-- Wyjaśnienie: Aplikacja powinna być dostępna online za pomocą bezpiecznego połączenia HTTPS.
+| Funkcja    | Chrome PC | Chrome Android |
+| - | - | - |
+| Nagrywanie audio | Tak | Tak |
+| Rozpoznawanie mowy | Tak | Nie* |
+| Odtwarzanie nagrań | Tak | Tak |
+| Działanie offline | Tak | Tak |
 
-6. Responsywność:
-- Wyjaśnienie: Aplikacja powinna być responsywna, co oznacza, że powinna dostosowywać się do różnych rozmiarów ekranu.
-
-7. Wydajność:
-- Wyjaśnienie: Aplikacja powinna ładować się szybko i działać płynnie. Można użyć narzędzi takich jak Lighthouse do oceny wydajności aplikacji.
-
-8. Strategia buforowania:
-- Wyjaśnienie: Strategie buforowania używane w Service Worker powinny być odpowiednie odpowiednie dla różnych rodzajów zasobów.
-
-9. Jakość kodu:
-- Wyjaśnienie: Kod powinien być czytelny, dobrze zorganizowany i zgodny z najlepszymi praktykami.
-
-10. Dokumentacja kodu i projektu
-- Wyjaśnienie: Kod źródłowy powinien być odpowiednio skomentowany, a README projektu na GitHubie powinno zawierać instrukcje uruchomienia projektu, zależności, użyte technologie i funkcjonalności.
- 
-
-
-### Widoki
-
-1. Główny
-- Lista z notatkami, naciśnięcie dowolnej pozwala na jej odsłuchanie
-
-2. Nagrywki
-- Ekran do nagrania nowej notatki oraz jej edycji.
-
-3. Edycja
-- Edycja/Usunięcie już istniejącej notatki.
+\* Rozpoznawanie mowy nie działa na Androidze również w uruchomionej wersji na komputer
